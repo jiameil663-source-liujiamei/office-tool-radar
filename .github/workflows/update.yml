@@ -30,6 +30,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 飞书日报推送
+        run: python scripts/feishu_digest.py
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
+
       - name: 有变化则提交(触发 Pages 重新部署)
         run: |
           git config user.name "radar-bot"
