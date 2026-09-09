@@ -18,13 +18,20 @@
 ## 目录结构
 
 ```
-├── index.html              # 页面(单文件,无构建,纯 vanilla JS)
+├── index.html                # 页面(单文件,无构建,纯 vanilla JS)
 ├── data/
-│   ├── tools.json          # 选品清单(人工维护:分类/描述/平台/标签/安装命令)
-│   └── stats.json          # 每日数据(机器人自动生成,请勿手改)
-├── scripts/fetch_stats.py  # 采集脚本(本地可干跑:--limit 5)
+│   ├── tools.json            # 选品清单(人工维护:分类/描述/平台/标签/安装命令)
+│   ├── stats.json            # 每日数据(机器人自动生成,请勿手改)
+│   ├── articles.json         # 提效日报·主打工具内容库(按日期轮换,欢迎补充)
+│   └── tips.json             # 提效日报·技巧库(按日期轮换)
+├── scripts/
+│   ├── fetch_stats.py        # 采集脚本(本地可干跑:--limit 5)
+│   ├── feishu_digest.py      # 飞书日报卡片(每天)
+│   └── feishu_article.py     # AI 提效日报文档(工作日,--dry 可预览文稿)
 └── .github/workflows/update.yml  # 每日定时任务
 ```
+
+每天 09:30(北京时间)自动执行:采集数据 → 提交并刷新 Pages → 推送飞书日报卡片 → 工作日生成《AI 提效日报》文档(周五为一周盘点)并转让给文档主人审阅分享。
 
 ## 如何推荐新工具
 
