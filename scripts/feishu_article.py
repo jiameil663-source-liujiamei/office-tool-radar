@@ -65,15 +65,21 @@ def hot_lines(entries, top_n=5):
     return title, lines
 
 
-def compose():
+def compose(repo_override=None):
     entries = gather()
     arts = jload("data/articles.json")["features"]
     now = datetime.now(CST)
     today = now.date()
-    if today.weekday() >= 5:
-        return None  # 周末
-    days = (today - EPOCH).days
-    feat = arts[days % len(arts)]
+    if repo_override:  # 点单模式:指定工具,不看日期
+        feat = next((a for a in arts if a["repo"] == repo_override), None)
+        if feat is None:
+            print("内容库中没有 %s 的文章" % repo_override)
+            return False
+    else:
+        if today.weekday() >= 5:
+            return None  # 周末
+        days = (today - EPOCH).days
+        feat = arts[days % len(arts)]
 
     # 从实时数据里找该工具的指标
     me = next((e for e in entries if e["repo"] == feat["repo"]), None)
@@ -222,11 +228,16 @@ def send_link_card(doc_id, app_id, app_secret):
 
 
 def main():
-    article = compose()
+    args = sys.argv[1:]
+    dry = "--dry" in args
+    repo = args[args.index("--repo") + 1] if "--repo" in args else None
+    article = compose(repo)
+    if article is False:
+        sys.exit(1)  # 点单的工具不在内容库
     if article is None:
         print("今天是周末,跳过")
         return
-    if "--dry" in sys.argv:
+    if dry:
         for kind, content in article["sections"]:
             mark = {"h1": "# ", "h2": "## ", "h3": "### ", "textb": "****"}.get(kind, "")
             if isinstance(content, list):
