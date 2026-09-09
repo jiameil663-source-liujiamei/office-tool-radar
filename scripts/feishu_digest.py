@@ -29,40 +29,51 @@ OPEN_API = "https://open.feishu.cn/open-apis"
 CST = timezone(timedelta(hours=8))  # 北京时间
 
 
-def load():
-    tools = json.load(open(os.path.join(BASE, "data", "tools.json"), encoding="utf-8"))
-    stats = json.load(open(os.path.join(BASE, "data", "stats.json"), encoding="utf-8"))
-    name_by_repo = {t["repo"]: t["name"] for t in tools["tools"]}
-    return stats, name_by_repo
+def jload_tools():
+    return json.load(open(os.path.join(BASE, "data", "tools.json"), encoding="utf-8"))
+
+
+def jload_stats():
+    return json.load(open(os.path.join(BASE, "data", "stats.json"), encoding="utf-8"))
 
 
 def build_card():
     """构建飞书卡片 dict(header + elements,IM 与 webhook 通用)。"""
-    stats, name_by_repo = load()
+    tools_doc = jload_tools()
+    info = {t["repo"]: t for t in tools_doc["tools"]}
+    stats = jload_stats()
     now = datetime.now(CST)
     entries = []
     for repo, s in stats.get("tools", {}).items():
         if s.get("missing"):
             continue
+        t = info.get(repo, {})
         entries.append({
             "repo": repo,
-            "name": name_by_repo.get(repo, repo.split("/")[-1]),
+            "name": t.get("name", repo.split("/")[-1]),
+            "desc": t.get("desc", ""),
             "stars": s.get("stars") or 0,
             "d7": s.get("delta_7d"),
             "tag": s.get("release_tag"),
             "release_ts": s.get("release_date"),
         })
 
-    # ── 热门 TOP5:优先周增量,趋势不足降级 star 总榜
+    # ── 热门 TOP5:数字 + 一句话功能摘要
     with_d7 = [e for e in entries if e["d7"]]
     if len(with_d7) >= 5:
         hot = sorted(with_d7, key=lambda e: e["d7"], reverse=True)[:5]
         hot_title = "🔥 本周热门 TOP5(近 7 天 star 增量)"
-        hot_lines = [f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　↑{e['d7']:+,}" for i, e in enumerate(hot, 1)]
+        hot_lines = [
+            f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　↑{e['d7']:+,}\n{e['desc']}"
+            for i, e in enumerate(hot, 1)
+        ]
     else:
         hot = sorted(entries, key=lambda e: e["stars"], reverse=True)[:5]
         hot_title = "🔥 Star 总榜 TOP5(趋势累积中,几天后切换为周增量榜)"
-        hot_lines = [f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　⭐{e['stars']:,}" for i, e in enumerate(hot, 1)]
+        hot_lines = [
+            f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　⭐{e['stars']:,}\n{e['desc']}"
+            for i, e in enumerate(hot, 1)
+        ]
 
     # ── 今日新版本(按 UTC 日期对齐采集时刻)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
