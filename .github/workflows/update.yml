@@ -1,0 +1,43 @@
+name: 每日数据更新
+
+on:
+  schedule:
+    - cron: "30 1 * * *" # 北京时间每天 09:30
+  workflow_dispatch: # 支持手动触发
+  push:
+    branches: [main]
+    paths: ["data/tools.json", "scripts/**"] # 选品变化时立即重采(自动提交的 stats.json 不在列表内,避免循环)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 采集 GitHub 数据
+        run: python scripts/fetch_stats.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 有变化则提交(触发 Pages 重新部署)
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "actions@github.com"
+          git add data/stats.json
+          if git diff --staged --quiet; then
+            echo "数据无变化,跳过提交"
+          else
+            git commit -m "data: 更新 $(date -u +'%Y-%m-%d') 采集数据 [skip ci]"
+            git push
+          fi
