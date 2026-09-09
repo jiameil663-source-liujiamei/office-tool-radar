@@ -1,0 +1,100 @@
+{
+ "tools": {
+  "EcoPasteHub/EcoPaste": {
+   "archived": false,
+   "delta_1d": null,
+   "delta_7d": null,
+   "forks": 375,
+   "history": [
+    {
+     "d": "2026-09-09",
+     "s": 7375
+    }
+   ],
+   "license": "Apache-2.0",
+   "missing": false,
+   "pushed_at": "2026-08-13T00:29:50Z",
+   "release_date": "2026-07-22T03:23:25Z",
+   "release_tag": "v1.1.0",
+   "release_url": "https://github.com/EcoPasteHub/EcoPaste/releases/tag/v1.1.0",
+   "stars": 7375
+  },
+  "microsoft/PowerToys": {
+   "archived": false,
+   "delta_1d": null,
+   "delta_7d": null,
+   "forks": 8547,
+   "history": [
+    {
+     "d": "2026-09-09",
+     "s": 138507
+    }
+   ],
+   "license": "MIT",
+   "missing": false,
+   "pushed_at": "2026-09-09T00:57:29Z",
+   "release_date": "2026-08-25T08:34:52Z",
+   "release_tag": "v0.101.2362.0",
+   "release_url": "https://github.com/microsoft/PowerToys/releases/tag/v0.101.2362.0",
+   "stars": 138507
+  },
+  "p0deje/Maccy": {
+   "archived": false,
+   "delta_1d": null,
+   "delta_7d": null,
+   "forks": 1141,
+   "history": [
+    {
+     "d": "2026-09-09",
+     "s": 21528
+    }
+   ],
+   "license": "MIT",
+   "missing": false,
+   "pushed_at": "2026-09-04T21:41:11Z",
+   "release_date": "2026-08-10T14:35:26Z",
+   "release_tag": "2.7.1",
+   "release_url": "https://github.com/p0deje/Maccy/releases/tag/2.7.1",
+   "stars": 21528
+  },
+  "tw93/Pake": {
+   "archived": false,
+   "delta_1d": null,
+   "delta_7d": null,
+   "forks": 12632,
+   "history": [
+    {
+     "d": "2026-09-09",
+     "s": 61349
+    }
+   ],
+   "license": "GPL-3.0",
+   "missing": false,
+   "pushed_at": "2026-09-07T02:42:13Z",
+   "release_date": "2026-08-08T12:40:13Z",
+   "release_tag": "V3.15.6",
+   "release_url": "https://github.com/tw93/Pake/releases/tag/V3.15.6",
+   "stars": 61349
+  },
+  "vorssaint/vorssaint-utils": {
+   "archived": false,
+   "delta_1d": null,
+   "delta_7d": null,
+   "forks": 596,
+   "history": [
+    {
+     "d": "2026-09-09",
+     "s": 17223
+    }
+   ],
+   "license": "GPL-3.0",
+   "missing": false,
+   "pushed_at": "2026-09-09T02:32:40Z",
+   "release_date": "2026-09-07T00:34:53Z",
+   "release_tag": "v3.3.5",
+   "release_url": "https://github.com/vorssaint/vorssaint-utils/releases/tag/v3.3.5",
+   "stars": 17223
+  }
+ },
+ "updated_at": "2026-09-09T03:21+00:00"
+}
