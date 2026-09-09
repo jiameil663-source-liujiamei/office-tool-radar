@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
 办公工具雷达 · 飞书日报
-读取 data/tools.json + data/stats.json → 生成日报卡片 → POST 到飞书群机器人 webhook
+读取 data/tools.json + data/stats.json → 生成日报卡片 → 推送飞书
 内容:本周热门 TOP5(趋势不足时降级为 star 总榜)/ 今日新版本 / 仓库失联警告
+
+两种推送模式(按环境变量自动选择):
+  A. 应用私聊(群小汇):FEISHU_APP_ID + FEISHU_APP_SECRET + FEISHU_OPEN_ID
+  B. 群机器人 webhook:FEISHU_WEBHOOK(+ 可选 FEISHU_SECRET 签名)
+都没设置则跳过(不影响采集)。
+
 用法:python3 scripts/feishu_digest.py [--dry]   # --dry 只打印卡片不发送
-环境变量:
-  FEISHU_WEBHOOK  必填(群机器人 webhook 地址)
-  FEISHU_SECRET   可选(机器人开了"签名校验"时填)
 仅标准库,Python 3.9+。
 """
 import base64
@@ -16,11 +19,13 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = "https://jiameil663-source-liujiamei.github.io/office-tool-radar/"
+OPEN_API = "https://open.feishu.cn/open-apis"
 CST = timezone(timedelta(hours=8))  # 北京时间
 
 
@@ -28,11 +33,12 @@ def load():
     tools = json.load(open(os.path.join(BASE, "data", "tools.json"), encoding="utf-8"))
     stats = json.load(open(os.path.join(BASE, "data", "stats.json"), encoding="utf-8"))
     name_by_repo = {t["repo"]: t["name"] for t in tools["tools"]}
-    return tools, stats, name_by_repo
+    return stats, name_by_repo
 
 
-def build_digest():
-    tools_doc, stats, name_by_repo = load()
+def build_card():
+    """构建飞书卡片 dict(header + elements,IM 与 webhook 通用)。"""
+    stats, name_by_repo = load()
     now = datetime.now(CST)
     entries = []
     for repo, s in stats.get("tools", {}).items():
@@ -43,7 +49,6 @@ def build_digest():
             "name": name_by_repo.get(repo, repo.split("/")[-1]),
             "stars": s.get("stars") or 0,
             "d7": s.get("delta_7d"),
-            "d1": s.get("delta_1d"),
             "tag": s.get("release_tag"),
             "release_ts": s.get("release_date"),
         })
@@ -52,26 +57,23 @@ def build_digest():
     with_d7 = [e for e in entries if e["d7"]]
     if len(with_d7) >= 5:
         hot = sorted(with_d7, key=lambda e: e["d7"], reverse=True)[:5]
-        hot_title = "本周热门 TOP5(近 7 天 star 增量)"
+        hot_title = "🔥 本周热门 TOP5(近 7 天 star 增量)"
         hot_lines = [f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　↑{e['d7']:+,}" for i, e in enumerate(hot, 1)]
     else:
         hot = sorted(entries, key=lambda e: e["stars"], reverse=True)[:5]
-        hot_title = "Star 总榜 TOP5(趋势累积中,几天后切换为周增量榜)"
+        hot_title = "🔥 Star 总榜 TOP5(趋势累积中,几天后切换为周增量榜)"
         hot_lines = [f"**{i}.** [{e['name']}](https://github.com/{e['repo']})　⭐{e['stars']:,}" for i, e in enumerate(hot, 1)]
 
-    # ── 今日新版本(北京时间今天发布的)
-    today = now.strftime("%Y-%m-%d")
-    releases = [
-        e for e in entries
-        if e["release_ts"] and e["release_ts"][:10] == datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    ]
+    # ── 今日新版本(按 UTC 日期对齐采集时刻)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    releases = [e for e in entries if e["release_ts"] and e["release_ts"][:10] == today]
     rel_lines = [f"- **{e['name']}** 发布 `{e['tag']}`" for e in releases[:8]] or ["- 今日无新版本发布"]
 
     # ── 失联警告
     missing = [name_by_repo.get(r, r) for r, s in stats.get("tools", {}).items() if s.get("missing")]
 
     elements = [
-        {"tag": "div", "text": {"tag": "lark_md", "content": f"**🔥 {hot_title}**\n" + "\n".join(hot_lines)}},
+        {"tag": "div", "text": {"tag": "lark_md", "content": f"**{hot_title}**\n" + "\n".join(hot_lines)}},
         {"tag": "hr"},
         {"tag": "div", "text": {"tag": "lark_md", "content": "**🏷 今日新版本**\n" + "\n".join(rel_lines)}},
     ]
@@ -92,47 +94,77 @@ def build_digest():
         }]},
     ]
     return {
-        "msg_type": "interactive",
-        "card": {
-            "header": {
-                "title": {"tag": "plain_text", "content": f"📡 办公工具雷达日报 · {now.strftime('%m月%d日')}"},
-                "template": "blue",
-            },
-            "elements": elements,
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "title": {"tag": "plain_text", "content": f"📡 办公工具雷达日报 · {now.strftime('%m月%d日')}"},
+            "template": "blue",
         },
+        "elements": elements,
     }
 
 
-def sign(payload, secret):
-    """飞书自定义机器人签名校验:sign = base64(hmac_sha256(key=f'{ts}\n{secret}', msg=''))"""
-    ts = str(int(time.time()))
-    digest = hmac.new((ts + "\n" + secret).encode(), b"", hashlib.sha256).digest()
-    payload["timestamp"] = ts
-    payload["sign"] = base64.b64encode(digest).decode()
-    return payload
+# ── 模式 A:应用私聊(群小汇)──────────────────────
+def tenant_token(app_id, app_secret):
+    body = json.dumps({"app_id": app_id, "app_secret": app_secret}).encode()
+    req = urllib.request.Request(
+        OPEN_API + "/auth/v3/tenant_access_token/internal",
+        data=body, headers={"Content-Type": "application/json"}, method="POST")
+    return json.loads(urllib.request.urlopen(req, timeout=15).read())["tenant_access_token"]
+
+
+def send_via_app(card, app_id, app_secret, open_id):
+    token = tenant_token(app_id, app_secret)
+    msg = {"receive_id": open_id, "msg_type": "interactive", "content": json.dumps(card)}
+    req = urllib.request.Request(
+        OPEN_API + "/im/v1/messages?receive_id_type=open_id",
+        data=json.dumps(msg).encode(),
+        headers={"Authorization": "Bearer " + token, "Content-Type": "application/json; charset=utf-8"},
+        method="POST")
+    try:
+        resp = json.loads(urllib.request.urlopen(req, timeout=15).read())
+    except urllib.error.HTTPError as e:
+        resp = json.loads(e.read() or b"{}")
+    print("飞书(应用私聊)返回: code =", resp.get("code"), "|", resp.get("msg"))
+    return resp.get("code") == 0
+
+
+# ── 模式 B:群机器人 webhook ──────────────────────
+def send_via_webhook(card, webhook, secret=None):
+    payload = {"msg_type": "interactive", "card": card}
+    if secret:
+        ts = str(int(time.time()))
+        payload["timestamp"] = ts
+        payload["sign"] = base64.b64encode(
+            hmac.new((ts + "\n" + secret).encode(), b"", hashlib.sha256).digest()).decode()
+    req = urllib.request.Request(
+        webhook, data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        resp = json.loads(urllib.request.urlopen(req, timeout=15).read())
+    except urllib.error.HTTPError as e:
+        resp = json.loads(e.read() or b"{}")
+    print("飞书(webhook)返回: code =", resp.get("code"), "|", resp.get("msg"))
+    return resp.get("code") in (0, None)
 
 
 def main():
     dry = "--dry" in sys.argv
-    payload = build_digest()
+    card = build_card()
     if dry:
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        print(json.dumps(card, ensure_ascii=False, indent=2))
         return
+
+    app_id = os.environ.get("FEISHU_APP_ID")
+    if app_id and os.environ.get("FEISHU_APP_SECRET") and os.environ.get("FEISHU_OPEN_ID"):
+        ok = send_via_app(card, app_id, os.environ["FEISHU_APP_SECRET"], os.environ["FEISHU_OPEN_ID"])
+        sys.exit(0 if ok else 1)
+
     webhook = os.environ.get("FEISHU_WEBHOOK")
-    if not webhook:
-        print("未设置 FEISHU_WEBHOOK,跳过推送(不影响采集)")
-        return
-    if os.environ.get("FEISHU_SECRET"):
-        payload = sign(payload, os.environ["FEISHU_SECRET"])
-    req = urllib.request.Request(
-        webhook, data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"}, method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=15) as r:
-        resp = json.load(r)
-    print("飞书返回:", resp)
-    if resp.get("code") not in (0, None):
-        sys.exit(1)
+    if webhook:
+        ok = send_via_webhook(card, webhook, os.environ.get("FEISHU_SECRET"))
+        sys.exit(0 if ok else 1)
+
+    print("未设置 FEISHU_APP_ID/FEISHU_WEBHOOK,跳过推送(不影响采集)")
 
 
 if __name__ == "__main__":
