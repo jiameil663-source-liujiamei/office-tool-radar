@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>办公工具雷达 · 全员可用的开源效率神器</title>
+<meta name="description" content="精选 65+ 个办公场景开源实用工具:剪贴板、截图录屏、文件传输、文档知识库、本地 AI……每天自动更新 star 数与最新版本,数据来自 GitHub。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #898781;
+    --hairline: #e1e0d9;
+    --ring: rgba(11,11,11,0.10);
+    --accent: #2a78d6;
+    --accent-soft: rgba(42,120,214,0.10);
+    --up: #006300;
+    --critical: #d03b3b;
+    --chip: #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --ink-3: #898781;
+      --hairline: #2c2c2a;
+      --ring: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+      --accent-soft: rgba(57,135,229,0.14);
+      --up: #0ca30c;
+      --critical: #d03b3b;
+      --chip: #262624;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--page); color: var(--ink);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── 顶栏 ─────────────────────────── */
+  header { border-bottom: 1px solid var(--hairline); background: var(--surface); }
+  .head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 22px 0 18px; }
+  .logo { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .logo h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+  .logo h1 .em { font-size: 22px; }
+  .logo .sub { color: var(--ink-2); font-size: 14px; }
+  .update-badge {
+    margin-left: auto; font-size: 13px; color: var(--ink-2);
+    border: 1px solid var(--ring); border-radius: 999px; padding: 4px 12px;
+    background: var(--page); white-space: nowrap;
+  }
+  .update-badge b { color: var(--ink); font-weight: 600; }
+  .searchbar { padding-bottom: 18px; }
+  .searchbar input {
+    width: 100%; font-size: 15px; padding: 10px 16px;
+    border: 1px solid var(--hairline); border-radius: 10px;
+    background: var(--page); color: var(--ink); outline: none;
+    transition: border-color .15s;
+  }
+  .searchbar input:focus { border-color: var(--accent); }
+  .searchbar input::placeholder { color: var(--ink-3); }
+
+  /* ── 统计条(stat tiles)───────────── */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 24px 0; }
+  .tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px 18px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); }
+  .tile .value { font-size: 30px; font-weight: 600; line-height: 1.25; }
+  .tile .note { font-size: 12.5px; color: var(--ink-3); }
+  .tile .delta { font-size: 13.5px; color: var(--up); font-weight: 600; }
+
+  /* ── 本周热门(横向条,单序列)──────── */
+  .panel { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px 20px; margin: 0 0 24px; }
+  .panel h2 { font-size: 16px; font-weight: 650; margin-bottom: 4px; }
+  .panel .hint { font-size: 12.5px; color: var(--ink-3); margin-bottom: 12px; }
+  .hot-row { display: grid; grid-template-columns: 24px minmax(90px, 200px) 1fr 64px; align-items: center; gap: 10px; padding: 5px 0; }
+  .hot-row .rank { color: var(--ink-3); font-size: 13px; text-align: center; font-variant-numeric: tabular-nums; }
+  .hot-row .rank.top { color: var(--accent); font-weight: 700; }
+  .hot-row .name { font-size: 14px; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hot-row .bar-track { height: 18px; display: flex; align-items: center; }
+  .hot-row .bar { height: 18px; min-width: 4px; border-radius: 0 4px 4px 0; background: var(--accent); transition: width .4s ease; }
+  .hot-row .bar:hover { opacity: .85; }
+  .hot-row .val { font-size: 13px; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ── 筛选器 ────────────────────────── */
+  .filters { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0 12px; border-bottom: 1px solid var(--hairline); margin-bottom: 18px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip-row + .chip-row { margin-top: 8px; }
+  .chip-row .row-label { font-size: 12.5px; color: var(--ink-3); margin-right: 2px; }
+  .chip {
+    font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--hairline); background: var(--chip); color: var(--ink-2);
+    transition: all .12s; white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .sort-wrap { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .sort-wrap label { font-size: 12.5px; color: var(--ink-3); }
+  .sort-wrap select {
+    font-size: 13px; padding: 5px 8px; border-radius: 8px;
+    border: 1px solid var(--hairline); background: var(--chip); color: var(--ink); outline: none;
+  }
+
+  /* ── 工具卡片 ──────────────────────── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; padding-bottom: 40px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 12px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 9px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover { border-color: var(--accent); box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card-head .name { font-size: 16.5px; font-weight: 650; }
+  .card-head .name a { color: var(--ink); }
+  .card-head .name a:hover { color: var(--accent); }
+  .origin-flag { font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; font-weight: 600; }
+  .pf { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  .pf span { font-size: 10.5px; padding: 1px 6px; border-radius: 4px; background: var(--chip); color: var(--ink-2); border: 1px solid var(--hairline); white-space: nowrap; }
+  .desc { font-size: 13.5px; color: var(--ink-2); flex: 1; }
+  .tagrow { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tagrow span { font-size: 11.5px; color: var(--ink-3); background: var(--accent-soft); border-radius: 4px; padding: 1px 7px; }
+  .metrics { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); padding-top: 2px; border-top: 1px dashed var(--hairline); }
+  .metrics .m b { color: var(--ink); font-weight: 650; font-variant-numeric: tabular-nums; }
+  .metrics .d1 { color: var(--up); font-size: 12px; font-weight: 600; }
+  .metrics .missing { color: var(--critical); font-weight: 600; }
+  .card-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .card-foot .lnk { font-size: 12.5px; }
+  .install { margin-left: auto; font-size: 11.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-2); background: var(--page); border: 1px solid var(--hairline); border-radius: 6px; padding: 2px 8px; cursor: pointer; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .install:hover { border-color: var(--accent); color: var(--ink); }
+  .install.copied { color: var(--up); border-color: var(--up); }
+  .noresult { grid-column: 1/-1; text-align: center; color: var(--ink-3); padding: 60px 0; font-size: 14px; }
+
+  /* ── 页脚 ──────────────────────────── */
+  footer { border-top: 1px solid var(--hairline); background: var(--surface); padding: 22px 0 30px; font-size: 12.5px; color: var(--ink-3); }
+  footer .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+
+  @media (max-width: 640px) {
+    .logo h1 { font-size: 21px; }
+    .update-badge { margin-left: 0; }
+    .hot-row { grid-template-columns: 20px minmax(72px, 120px) 1fr 56px; gap: 6px; }
+    .grid { grid-template-columns: 1fr; }
+    .sort-wrap { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head-row">
+      <div class="logo">
+        <h1><span class="em">📡</span> 办公工具雷达</h1>
+        <span class="sub">全员可用的开源效率神器 · 告别付费订阅</span>
+      </div>
+      <span class="update-badge" id="updateBadge">数据更新至 <b>—</b></span>
+    </div>
+    <div class="searchbar">
+      <input id="q" type="search" placeholder="搜索工具:截图 / 剪贴板 / 远程 / 笔记 / 翻译…" aria-label="搜索工具">
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 统计条 -->
+  <section class="stats" aria-label="站点统计">
+    <div class="tile">
+      <div class="label">收录工具</div>
+      <div class="value" id="stTools">—</div>
+      <div class="note">12 个分类,人工精选</div>
+    </div>
+    <div class="tile">
+      <div class="label">本周 Star 总增量</div>
+      <div class="value" id="stWeek">—</div>
+      <div class="delta" id="stWeekDelta"></div>
+    </div>
+    <div class="tile">
+      <div class="label">数据更新</div>
+      <div class="value" id="stUpdate" style="font-size:24px; padding-top:3px;">—</div>
+      <div class="note">每日 09:30 自动采集 GitHub 数据</div>
+    </div>
+  </section>
+
+  <!-- 本周热门 -->
+  <section class="panel" aria-label="本周热门">
+    <h2>🔥 本周热门 TOP5</h2>
+    <div class="hint" id="hotHint">按近 7 天 GitHub star 增量排序 · 数据来自每日自动采集</div>
+    <div id="hotList"></div>
+  </section>
+
+  <!-- 筛选器 -->
+  <div class="filters">
+    <div class="chip-row" id="catRow"></div>
+    <div class="chip-row" id="pfRow">
+      <span class="row-label">平台</span>
+    </div>
+  </div>
+
+  <!-- 工具卡片 -->
+  <main class="grid" id="grid" aria-label="工具列表"></main>
+</div>
+
+<footer>
+  <div class="wrap row">
+    <span>📡 办公工具雷达 · 每天自动查询各工具的 star 数 / 最新版本 / 活跃度</span>
+    <a href="#" id="repoLink" target="_blank" rel="noopener">本站仓库</a>
+    <a href="#" id="issueLink" target="_blank" rel="noopener">推荐新工具</a>
+    <span style="margin-left:auto">全部免费开源,数据来自 GitHub 公开 API</span>
+  </div>
+</footer>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let TOOLS = null, STATS = null;
+const state = { cat: 'all', pf: 'all', q: '', sort: 'default' };
+const PLATFORMS = ['macOS', 'Windows', 'Linux', 'Web', '自部署', '手机'];
+
+/* ── 格式化 ── */
+const fmtK = n => n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n);
+const fmtSigned = n => n >= 10000 ? '+' + fmtK(n) : '+' + n.toLocaleString();
+const relDays = iso => {
+  if (!iso) return null;
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (d <= 0) return '今天';
+  if (d === 1) return '昨天';
+  if (d < 30) return d + ' 天前';
+  if (d < 365) return Math.round(d / 30) + ' 个月前';
+  return Math.round(d / 365) + ' 年前';
+};
+const fmtDate = iso => iso ? iso.slice(5, 10).replace('-', '月') + '日' : '';
+
+/* ── 数据加载 ── */
+async function load() {
+  const [t, s] = await Promise.all([
+    fetch('data/tools.json').then(r => r.json()),
+    fetch('data/stats.json').then(r => r.ok ? r.json() : null).catch(() => null),
+  ]);
+  TOOLS = t; STATS = s || { updated_at: null, tools: {} };
+  return { tools: t, stats: s };
+}
+
+/* ── 统计条 ── */
+function renderStats() {
+  const n = TOOLS.tools.length;
+  $('stTools').textContent = n;
+  const deltas = Object.values(STATS.tools || {}).map(x => x.delta_7d || 0);
+  const weekSum = deltas.reduce((a, b) => a + b, 0);
+  $('stWeek').textContent = STATS.updated_at && deltas.length ? fmtSigned(weekSum) : '—';
+  $('stWeekDelta').textContent = deltas.length ? `共 ${deltas.length} 个仓库有增量数据` : '首次采集后明天起显示';
+  if (STATS.updated_at) {
+    const d = new Date(STATS.updated_at);
+    const pad = x => String(x).padStart(2, '0');
+    const str = `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    $('stUpdate').textContent = str;
+    $('updateBadge').innerHTML = `数据更新至 <b>${str}</b>`;
+  } else {
+    $('stUpdate').textContent = '待采集';
+    $('updateBadge').innerHTML = '数据<b>等待首次采集</b>';
+  }
+}
+
+/* ── 本周热门 ── */
+function renderHot() {
+  const rows = TOOLS.tools
+    .map(t => ({ t, d: (STATS.tools?.[t.repo] || {}).delta_7d }))
+    .filter(r => r.d != null && r.d > 0)
+    .sort((a, b) => b.d - a.d)
+    .slice(0, 5);
+  const el = $('hotList');
+  if (!rows.length) {
+    $('hotHint').textContent = '趋势数据采集中——每天 09:30 自动采集 GitHub 数据,明天起展示 star 增量排行';
+    el.innerHTML = '';
+    return;
+  }
+  const max = rows[0].d;
+  el.innerHTML = rows.map((r, i) => `
+    <div class="hot-row" title="${esc(r.t.desc)}">
+      <span class="rank ${i < 3 ? 'top' : ''}">${i + 1}</span>
+      <a class="name" href="https://github.com/${esc(r.t.repo)}" target="_blank" rel="noopener">${esc(r.t.name)}</a>
+      <div class="bar-track"><div class="bar" style="width:${Math.max(4, r.d / max * 100)}%"></div></div>
+      <span class="val">${fmtSigned(r.d)}</span>
+    </div>`).join('');
+}
+
+/* ── 筛选 chips ── */
+function renderChips() {
+  const cats = [{ id: 'all', icon: '✨', name: '全部' }, ...TOOLS.categories];
+  $('catRow').innerHTML =
+    `<span class="row-label">分类</span>` +
+    cats.map(c => `<button class="chip" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">${c.icon} ${c.name}</button>`).join('') +
+    `<div class="sort-wrap"><label for="sortSel">排序</label>
+      <select id="sortSel">
+        <option value="default">默认(分类)</option>
+        <option value="stars">Star 数</option>
+        <option value="weekly">本周新增</option>
+        <option value="updated">最近更新</option>
+      </select></div>`;
+  $('catRow').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+    state.cat = b.dataset.cat; syncHash(); renderChips(); renderGrid();
+  });
+  const sel = $('sortSel'); sel.value = state.sort;
+  sel.onchange = () => { state.sort = sel.value; renderGrid(); };
+
+  $('pfRow').insertAdjacentHTML('beforeend',
+    `<button class="chip" data-pf="all" aria-pressed="${state.pf === 'all'}">全部</button>` +
+    PLATFORMS.map(p => `<button class="chip" data-pf="${p}" aria-pressed="${state.pf === p}">${p}</button>`).join(''));
+  $('pfRow').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+    state.pf = b.dataset.pf; syncHash(); renderChips(); renderGrid();
+  });
+}
+
+/* ── 卡片 ── */
+function cardHTML(t) {
+  const s = STATS.tools?.[t.repo] || {};
+  const stars = s.stars != null ? fmtK(s.stars) : '—';
+  const d1 = s.delta_1d > 0 ? `<span class="d1">↑${s.delta_1d.toLocaleString()}/日</span>` : '';
+  const d7 = s.delta_7d > 0 ? `<span class="d1">↑${s.delta_7d.toLocaleString()}/周</span>` : '';
+  const missing = s.missing
+    ? `<span class="missing">⚠ 仓库失联</span>`
+    : `<span class="m">⭐ <b>${stars}</b> ${d1}${d7}</span>
+       <span class="m">🏷 <b>${esc(s.release_tag || '—')}</b>${s.release_date ? ' · ' + fmtDate(s.release_date) : ''}</span>
+       <span class="m">🕐 更新 ${relDays(s.pushed_at) || '—'}</span>`;
+  const home = t.homepage ? `<a class="lnk" href="${esc(t.homepage)}" target="_blank" rel="noopener">官网</a>` : '';
+  const dl = s.release_url || `https://github.com/${esc(t.repo)}/releases/latest`;
+  return `
+  <article class="card">
+    <div class="card-head">
+      <span class="name"><a href="https://github.com/${esc(t.repo)}" target="_blank" rel="noopener">${esc(t.name)}</a></span>
+      ${t.origin ? '<span class="origin-flag">灵感来源</span>' : ''}
+      <span class="pf">${t.platforms.map(p => `<span>${esc(p)}</span>`).join('')}</span>
+    </div>
+    <p class="desc">${esc(t.desc)}</p>
+    <div class="tagrow">${(t.tags || []).map(x => `<span>${esc(x)}</span>`).join('')}</div>
+    <div class="metrics">${missing}</div>
+    <div class="card-foot">
+      ${home}
+      <a class="lnk" href="https://github.com/${esc(t.repo)}" target="_blank" rel="noopener">GitHub</a>
+      <a class="lnk" href="${dl}" target="_blank" rel="noopener">下载</a>
+      ${t.install ? `<code class="install" title="点击复制安装命令">${esc(t.install)}</code>` : ''}
+    </div>
+  </article>`;
+}
+
+function renderGrid() {
+  const q = state.q.trim().toLowerCase();
+  let list = TOOLS.tools.filter(t => {
+    if (state.cat !== 'all' && t.category !== state.cat) return false;
+    if (state.pf !== 'all' && !t.platforms.includes(state.pf)) return false;
+    if (q) {
+      const hay = (t.name + t.desc + t.tags.join(',') + t.repo).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const catOrder = Object.fromEntries(TOOLS.categories.map((c, i) => [c.id, i]));
+  const st = r => STATS.tools?.[r]?.stars ?? -1;
+  const wk = r => STATS.tools?.[r]?.delta_7d ?? -1;
+  const up = r => STATS.tools?.[r]?.pushed_at ? new Date(STATS.tools[r].pushed_at).getTime() : 0;
+  const sorts = {
+    default:  (a, b) => catOrder[a.category] - catOrder[b.category] || st(b.repo) - st(a.repo),
+    stars:    (a, b) => st(b.repo) - st(a.repo),
+    weekly:   (a, b) => wk(b.repo) - wk(a.repo),
+    updated:  (a, b) => up(b.repo) - up(a.repo),
+  };
+  list.sort(sorts[state.sort]);
+  $('grid').innerHTML = list.length
+    ? list.map(cardHTML).join('')
+    : `<div class="noresult">没有匹配的工具,换个关键词试试~</div>`;
+  document.querySelectorAll('.install').forEach(el => el.onclick = () => {
+    navigator.clipboard?.writeText(el.textContent).then(() => {
+      el.classList.add('copied'); el.title = '已复制 ✓';
+      setTimeout(() => { el.classList.remove('copied'); el.title = '点击复制安装命令'; }, 1500);
+    });
+  });
+}
+
+/* ── hash 同步(#cat=xx&pf=xx 可分享筛选视图)── */
+function syncHash() {
+  const h = new URLSearchParams();
+  if (state.cat !== 'all') h.set('cat', state.cat);
+  if (state.pf !== 'all') h.set('pf', state.pf);
+  history.replaceState(null, '', h.toString() ? '#' + h : location.pathname);
+}
+function readHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('cat')) state.cat = h.get('cat');
+  if (h.get('pf')) state.pf = h.get('pf');
+}
+
+/* ── 启动 ── */
+(async () => {
+  readHash();
+  let ok = true;
+  try { await load(); } catch (e) { ok = false; }
+  if (!ok) {
+    $('grid').innerHTML = '<div class="noresult">数据加载失败,请刷新重试</div>';
+    return;
+  }
+  renderStats(); renderHot(); renderChips(); renderGrid();
+  let deb;
+  $('q').oninput = e => { clearTimeout(deb); deb = setTimeout(() => { state.q = e.target.value; renderGrid(); }, 120); };
+})();
+</script>
+</body>
+</html>
