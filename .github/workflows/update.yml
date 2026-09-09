@@ -30,15 +30,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 飞书日报推送
-        run: python scripts/feishu_digest.py
-        env:
-          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
-          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
-          FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
-          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
-          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
-
       - name: 有变化则提交(触发 Pages 重新部署)
         run: |
           git config user.name "radar-bot"
@@ -50,3 +41,21 @@ jobs:
             git commit -m "data: 更新 $(date -u +'%Y-%m-%d') 采集数据 [skip ci]"
             git push
           fi
+
+      - name: 飞书日报卡片
+        run: python scripts/feishu_digest.py
+        continue-on-error: true
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
+
+      - name: AI 提效日报文档(工作日)
+        run: python scripts/feishu_article.py
+        continue-on-error: true
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
