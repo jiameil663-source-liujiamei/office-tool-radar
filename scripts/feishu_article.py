@@ -132,7 +132,24 @@ def compose(repo_override=None):
         ("text", "本文由办公工具雷达自动组稿,数据来自 GitHub 每日采集。发布前请审阅,"
                  "建议补充你自己的使用案例与截图,会更落地。工具雷达:%s" % SITE),
     ]
-    return {"title": "AI 提效实战 · %d月%d日 | %s" % (today.month, today.day, feat["repo"].split("/")[-1]), "sections": sec}
+
+    # 配图:紧跟在包含指定步骤前缀的模块(bullets组)之后;文件缺失自动跳过
+    images = feat.get("images") or []
+    if images:
+        out = []
+        for kind, content in sec:
+            out.append((kind, content))
+            if kind == "bullets":
+                lines_ = content if isinstance(content, list) else []
+                for img in images:
+                    if any(str(ln).startswith(img["after"]) for ln in lines_):
+                        out.append(("image", img["file"]))
+        sec = out
+    return {
+        "title": "AI 提效实战 · %d月%d日 | %s" % (today.month, today.day, feat["repo"].split("/")[-1]),
+        "sections": sec,
+        "shots_dir": os.path.join("data", "shots", feat["repo"].split("/")[-1]),
+    }
 
 
 # ── 飞书文档(群小汇)──────────────────────────────
@@ -159,23 +176,82 @@ def runs(text, bold=False):
     return [{"text_run": {"content": text, "text_element_style": style}}]
 
 
-def to_blocks(sections):
-    blocks = []
-    for kind, content in sections:
-        if kind == "bullets":
-            for line in content:
-                blocks.append({"block_type": 12, "bullet": {"elements": runs(line)}})
-        elif kind == "h1":
-            blocks.append({"block_type": 3, "heading1": {"elements": runs(content)}})
-        elif kind == "h2":
-            blocks.append({"block_type": 4, "heading2": {"elements": runs(content)}})
-        elif kind == "h3":
-            blocks.append({"block_type": 5, "heading3": {"elements": runs(content)}})
-        elif kind == "textb":
-            blocks.append({"block_type": 2, "text": {"elements": runs(content, bold=True)}})
-        else:
-            blocks.append({"block_type": 2, "text": {"elements": runs(content)}})
-    return blocks
+def to_block(kind, content):
+    """单个 section → 块 dict;bullets 组在调用处逐条展开"""
+    if kind == "bullets":
+        return None  # 组类型,由 create_doc 逐条处理
+    if kind == "h1":
+        return {"block_type": 3, "heading1": {"elements": runs(content)}}
+    if kind == "h2":
+        return {"block_type": 4, "heading2": {"elements": runs(content)}}
+    if kind == "h3":
+        return {"block_type": 5, "heading3": {"elements": runs(content)}}
+    if kind == "textb":
+        return {"block_type": 2, "text": {"elements": runs(content, bold=True)}}
+    if kind == "image":
+        return None
+    return {"block_type": 2, "text": {"elements": runs(content)}}
+
+
+def bullets_blocks(content):
+    return [{"block_type": 12, "bullet": {"elements": runs(line)}} for line in content]
+
+
+def upload_image(path, parent_node, tok):
+    """上传截图素材(parent_node=图片块ID),返回 file_token"""
+    import uuid
+    fn = os.path.basename(path)
+    with open(path, "rb") as f:
+        content = f.read()
+    boundary = uuid.uuid4().hex
+    parts = []
+    for name, value in [("file_name", fn), ("parent_type", "docx_image"), ("parent_node", parent_node), ("size", str(len(content)))]:
+        parts.append(("--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n" % (boundary, name, value)).encode())
+    parts.append(("--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%s\"\r\nContent-Type: image/png\r\n\r\n" % (boundary, fn)).encode())
+    parts.append(content)
+    parts.append(("\r\n--%s--\r\n" % boundary).encode())
+    req = urllib.request.Request(
+        OPEN_API + "/drive/v1/medias/upload_all", data=b"".join(parts),
+        headers={"Authorization": "Bearer " + tok, "Content-Type": "multipart/form-data; boundary=" + boundary},
+        method="POST")
+    try:
+        r = json.loads(urllib.request.urlopen(req, timeout=60).read())
+        return r["data"]["file_token"] if r.get("code") == 0 else None
+    except Exception:
+        return None
+
+
+def append_image(doc_id, img_path, tok):
+    """官方三步:建空图片块 → 素材上传到该块 → replace_image 绑定"""
+    r = api("POST", "/docx/v1/documents/%s/blocks/%s/children" % (doc_id, doc_id),
+            {"children": [{"block_type": 27, "image": {}}], "index": -1}, tok)
+    if r.get("code") != 0:
+        print("  ✗ 建图片块失败:", r.get("msg"))
+        return False
+    block_id = (r.get("data", {}).get("children") or [{}])[0].get("block_id")
+    if not block_id:
+        print("  ✗ 未返回块ID:", json.dumps(r, ensure_ascii=False)[:120])
+        return False
+    ft = upload_image(img_path, block_id, tok)
+    if not ft:
+        print("  ✗ 素材上传失败:", os.path.basename(img_path))
+        return False
+    r2 = api("PATCH", "/docx/v1/documents/%s/blocks/%s" % (doc_id, block_id),
+             {"replace_image": {"token": ft}}, tok)
+    ok = r2.get("code") == 0
+    if not ok:
+        print("  ✗ 绑定素材失败:", r2.get("msg"))
+    return ok
+
+
+def png_size(path):
+    import struct
+    with open(path, "rb") as f:
+        head = f.read(24)
+    if head[:8] != b"\x89PNG\r\n\x1a\n":
+        return 1600, 1000
+    w, h = struct.unpack(">II", head[16:24])
+    return w, h
 
 
 def create_doc(article, app_id, app_secret):
@@ -186,16 +262,45 @@ def create_doc(article, app_id, app_secret):
         return None
     doc_id = r["data"]["document"]["document_id"]
     print("文档已创建:", doc_id)
+    children_path = "/docx/v1/documents/%s/blocks/%s/children" % (doc_id, doc_id)
 
-    blocks = to_blocks(article["sections"])
-    for i in range(0, len(blocks), 40):
-        chunk = blocks[i:i + 40]
-        r = api("POST", "/docx/v1/documents/%s/blocks/%s/children" % (doc_id, doc_id),
-                {"children": chunk, "index": -1}, token)
-        if r.get("code") != 0:
-            print("写入失败(批次 %d):" % (i // 40), r.get("code"), r.get("msg"))
-            return doc_id
-    print("正文写入完成(%d 块)" % len(blocks))
+    # 顺序追加:文本块批量、图片块单独上传后追加
+    buf, total, n_img = [], 0, 0
+
+    def flush():
+        nonlocal buf, total
+        for i in range(0, len(buf), 40):
+            chunk = buf[i:i + 40]
+            r = api("POST", children_path, {"children": chunk, "index": -1}, token)
+            if r.get("code") != 0:
+                print("写入失败(批次 %d):" % (i // 40), r.get("code"), r.get("msg"))
+                return False
+            total += len(chunk)
+        buf = []
+        return True
+
+    ok = True
+    for kind, content in article["sections"]:
+        if kind == "image":
+            if not flush():
+                ok = False
+                break
+            path = os.path.join(BASE, article.get("shots_dir", ""), content)
+            if not os.path.exists(path):
+                print("  跳过缺失图片:", content)
+                continue
+            if append_image(doc_id, path, token):
+                n_img += 1
+                print("  ✓ 配图:", content)
+        elif kind == "bullets":
+            buf.extend(bullets_blocks(content))
+        else:
+            block = to_block(kind, content)
+            if block:
+                buf.append(block)
+    if ok:
+        flush()
+    print("正文写入完成(%d 块 + %d 图)" % (total, n_img))
 
     api("POST", "/drive/v1/permissions/%s/members?type=docx&need_notification=true" % doc_id,
         {"member_type": "openid", "member_id": YAYI_OPEN_ID, "perm": "full_access"}, token)
