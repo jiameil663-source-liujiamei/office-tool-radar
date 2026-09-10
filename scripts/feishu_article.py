@@ -24,6 +24,20 @@ YAYI_OPEN_ID = os.environ.get("FEISHU_OPEN_ID") or "ou_da427f81e981135cf0a18d8f8
 CST = timezone(timedelta(hours=8))
 EPOCH = date(2026, 9, 10)  # 轮换起点(第一个工作日)
 WEEKDAY_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+STATE_PATH = os.path.join(BASE, "data", "pipeline_state.json")
+
+
+def load_state():
+    try:
+        return json.load(open(STATE_PATH, encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_state(st):
+    with open(STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+        f.write("\n")
 
 
 def jload(p):
@@ -336,6 +350,14 @@ def main():
     args = sys.argv[1:]
     dry = "--dry" in args
     repo = args[args.index("--repo") + 1] if "--repo" in args else None
+
+    # 当日已生成过则跳过(--force 强制重出;--repo 点单不受限)
+    if not dry and not repo and "--force" not in args:
+        today = datetime.now(CST).strftime("%Y-%m-%d")
+        if load_state().get("article") == today:
+            print("今日文章已生成过,跳过(防兜底 cron 双跑重复)")
+            return
+
     article = compose(repo)
     if article is False:
         sys.exit(1)  # 点单的工具不在内容库
@@ -360,6 +382,10 @@ def main():
         sys.exit(1)
     if not send_link_card(doc_id, app_id, app_secret):
         sys.exit(1)
+    if not repo:  # 点单不占每日名额
+        state = load_state()
+        state["article"] = datetime.now(CST).strftime("%Y-%m-%d")
+        save_state(state)
     print("完成:", "https://bytedance.feishu.cn/docx/" + doc_id)
 
 
