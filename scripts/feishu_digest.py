@@ -27,6 +27,20 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = "https://jiameil663-source-liujiamei.github.io/office-tool-radar/"
 OPEN_API = "https://open.feishu.cn/open-apis"
 CST = timezone(timedelta(hours=8))  # 北京时间
+STATE_PATH = os.path.join(BASE, "data", "pipeline_state.json")
+
+
+def load_state():
+    try:
+        return json.load(open(STATE_PATH, encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_state(st):
+    with open(STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+        f.write("\n")
 
 
 def jload_tools():
@@ -165,17 +179,28 @@ def main():
         print(json.dumps(card, ensure_ascii=False, indent=2))
         return
 
+    # 当日已发过则跳过(防兜底 cron 双跑重复推送)
+    today = datetime.now(CST).strftime("%Y-%m-%d")
+    state = load_state()
+    if state.get("digest") == today:
+        print("今日卡片已发送过,跳过")
+        return
+
     app_id = os.environ.get("FEISHU_APP_ID")
+    ok = False
     if app_id and os.environ.get("FEISHU_APP_SECRET") and os.environ.get("FEISHU_OPEN_ID"):
         ok = send_via_app(card, app_id, os.environ["FEISHU_APP_SECRET"], os.environ["FEISHU_OPEN_ID"])
-        sys.exit(0 if ok else 1)
-
-    webhook = os.environ.get("FEISHU_WEBHOOK")
-    if webhook:
-        ok = send_via_webhook(card, webhook, os.environ.get("FEISHU_SECRET"))
-        sys.exit(0 if ok else 1)
-
-    print("未设置 FEISHU_APP_ID/FEISHU_WEBHOOK,跳过推送(不影响采集)")
+    else:
+        webhook = os.environ.get("FEISHU_WEBHOOK")
+        if webhook:
+            ok = send_via_webhook(card, webhook, os.environ.get("FEISHU_SECRET"))
+        else:
+            print("未设置 FEISHU_APP_ID/FEISHU_WEBHOOK,跳过推送(不影响采集)")
+            return
+    if ok:
+        state["digest"] = today
+        save_state(state)
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":
