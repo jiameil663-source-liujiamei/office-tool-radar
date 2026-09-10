@@ -74,7 +74,17 @@
         {"q": "数据存在哪,安全吗?", "a": "全部数据在部署机的本地卷(Docker volume),对话记录、知识库文件都不经过任何第三方;这就是它相对公有云 AI 的核心价值。"},
         {"q": "和直接用 ChatGPT / 飞书智能伙伴有什么区别?", "a": "三个硬区别:数据不出内网(合规)、提示词和知识库团队共享复用(资产化)、模型随插随换(哪家便宜/准用哪家,不被单一供应商锁定)。"}
       ],
-      "summary": "有服务器资源的团队,这是最值得优先部署的一个开源项目;个人尝鲜用 pip 或配合 Ollama 半小时就能跑起来。先统一入口,再沉淀提示词和知识库,AI 提效才会复利。"
+      "summary": "有服务器资源的团队,这是最值得优先部署的一个开源项目;个人尝鲜用 pip 或配合 Ollama 半小时就能跑起来。先统一入口,再沉淀提示词和知识库,AI 提效才会复利。",
+      "images": [
+        {"after": "1. 打开网页", "file": "01_signup.png"},
+        {"after": "4. 接云端模型", "file": "03_admin_connections.png"},
+        {"after": "5. 保存后", "file": "02_chat_home.png"},
+        {"after": "1. 左上角下拉选模型", "file": "04_chat_input.png"},
+        {"after": "1. 左上角下拉选模型", "file": "05_chat_reply.png"},
+        {"after": "1. 左侧「工作区」", "file": "06_knowledge_home.png"},
+        {"after": "2. 上传 PDF/Word", "file": "07_knowledge_create.png"},
+        {"after": "4. 提问后回答", "file": "08_knowledge_created.png"}
+      ]
     },
     {
       "repo": "pot-app/pot-desktop",
