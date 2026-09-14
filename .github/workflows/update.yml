@@ -31,18 +31,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 有变化则提交(触发 Pages 重新部署)
-        run: |
-          git config user.name "radar-bot"
-          git config user.email "actions@github.com"
-          git add data/stats.json data/pipeline_state.json
-          if git diff --staged --quiet; then
-            echo "数据无变化,跳过提交"
-          else
-            git commit -m "data: 更新 $(date -u +'%Y-%m-%d') 采集数据 [skip ci]"
-            git push
-          fi
-
+      # 推送在前、提交在后:推送脚本写的 pipeline_state.json(当日去重标记)能随本次提交落库,
+      # 否则下次运行 checkout 拿不到它 → git add 失败 → 步骤连锁失败(2026-09-10~13 事故根因)
       - name: 飞书日报卡片
         run: python scripts/feishu_digest.py
         continue-on-error: true
@@ -60,3 +50,16 @@ jobs:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
+
+      - name: 有变化则提交(触发 Pages 重新部署)
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "actions@github.com"
+          test -f data/pipeline_state.json || echo '{}' > data/pipeline_state.json
+          git add data/stats.json data/pipeline_state.json
+          if git diff --staged --quiet; then
+            echo "数据无变化,跳过提交"
+          else
+            git commit -m "data: 更新 $(date -u +'%Y-%m-%d') 采集数据 [skip ci]"
+            git push
+          fi
