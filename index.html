@@ -181,7 +181,7 @@
       <div class="note">12 个分类,人工精选</div>
     </div>
     <div class="tile">
-      <div class="label">本周 Star 总增量</div>
+      <div class="label" id="stWeekLabel">本周 Star 总增量</div>
       <div class="value" id="stWeek">—</div>
       <div class="delta" id="stWeekDelta"></div>
     </div>
@@ -194,7 +194,7 @@
 
   <!-- 本周热门 -->
   <section class="panel" aria-label="本周热门">
-    <h2>🔥 本周热门 TOP5</h2>
+    <h2 id="hotTitle">🔥 本周热门 TOP5</h2>
     <div class="hint" id="hotHint">按近 7 天 GitHub star 增量排序 · 数据来自每日自动采集</div>
     <div id="hotList"></div>
   </section>
@@ -257,10 +257,21 @@ async function load() {
 function renderStats() {
   const n = TOOLS.tools.length;
   $('stTools').textContent = n;
-  const deltas = Object.values(STATS.tools || {}).map(x => x.delta_7d || 0);
-  const weekSum = deltas.reduce((a, b) => a + b, 0);
-  $('stWeek').textContent = STATS.updated_at && deltas.length ? fmtSigned(weekSum) : '—';
-  $('stWeekDelta').textContent = deltas.length ? `共 ${deltas.length} 个仓库有增量数据` : '首次采集后明天起显示';
+  // 周增量需 7 天历史累积;不足时降级用日增量汇总,标签同步切换
+  const d1 = Object.values(STATS.tools || {}).map(x => x.delta_1d).filter(v => v != null);
+  const d7 = Object.values(STATS.tools || {}).map(x => x.delta_7d).filter(v => v != null);
+  if (d7.length) {
+    $('stWeek').textContent = fmtSigned(d7.reduce((a, b) => a + b, 0));
+    $('stWeekLabel').textContent = '本周 Star 总增量';
+    $('stWeekDelta').textContent = `共 ${d7.length} 个仓库有增量数据`;
+  } else if (d1.length) {
+    $('stWeek').textContent = fmtSigned(d1.reduce((a, b) => a + b, 0));
+    $('stWeekLabel').textContent = '今日 Star 总增量';
+    $('stWeekDelta').textContent = `共 ${d1.length} 个仓库有增量数据`;
+  } else {
+    $('stWeek').textContent = '—';
+    $('stWeekDelta').textContent = '首次采集后显示';
+  }
   if (STATS.updated_at) {
     const d = new Date(STATS.updated_at);
     const pad = x => String(x).padStart(2, '0');
@@ -275,14 +286,27 @@ function renderStats() {
 
 /* ── 本周热门 ── */
 function renderHot() {
-  const rows = TOOLS.tools
-    .map(t => ({ t, d: (STATS.tools?.[t.repo] || {}).delta_7d }))
+  // 优先 7 天增量;历史不足 7 天时降级为 24 小时增量榜
+  const pick = key => TOOLS.tools
+    .map(t => ({ t, d: (STATS.tools?.[t.repo] || {})[key] }))
     .filter(r => r.d != null && r.d > 0)
-    .sort((a, b) => b.d - a.d)
-    .slice(0, 5);
+    .sort((a, b) => b.d - a.d);
+  let rows = pick('delta_7d'), title = '🔥 本周热门 TOP5';
+  if (rows.length < 5) {
+    const d1rows = pick('delta_1d');
+    if (d1rows.length >= 5) {
+      rows = d1rows.slice(0, 5);
+      title = '🔥 今日热门 TOP5(24 小时 star 增量)';
+    } else {
+      rows = [];
+    }
+  } else {
+    rows = rows.slice(0, 5);
+  }
+  $('hotTitle').textContent = title;
   const el = $('hotList');
   if (!rows.length) {
-    $('hotHint').textContent = '趋势数据采集中——每天 09:30 自动采集 GitHub 数据,明天起展示 star 增量排行';
+    $('hotHint').textContent = '趋势数据采集中——每天 09:30 自动采集 GitHub 数据,稍后展示 star 增量排行';
     el.innerHTML = '';
     return;
   }
