@@ -188,7 +188,7 @@
   },
   "Eugeny/tabby": {
    "archived": false,
-   "delta_1d": 10,
+   "delta_1d": 11,
    "delta_7d": null,
    "forks": 4253,
    "history": [
@@ -206,7 +206,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 74481
+     "s": 74482
     }
    ],
    "license": "MIT",
@@ -215,7 +215,7 @@
    "release_date": "2026-07-22T22:48:52Z",
    "release_tag": "v1.0.235",
    "release_url": "https://github.com/Eugeny/tabby/releases/tag/v1.0.235",
-   "stars": 74481
+   "stars": 74482
   },
   "Flow-Launcher/Flow.Launcher": {
    "archived": false,
@@ -250,7 +250,7 @@
   },
   "Genymobile/scrcpy": {
    "archived": false,
-   "delta_1d": 54,
+   "delta_1d": 56,
    "delta_7d": null,
    "forks": 13739,
    "history": [
@@ -268,7 +268,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 149634
+     "s": 149636
     }
    ],
    "license": "Apache-2.0",
@@ -277,7 +277,7 @@
    "release_date": "2026-07-12T18:15:37Z",
    "release_tag": "v4.1",
    "release_url": "https://github.com/Genymobile/scrcpy/releases/tag/v4.1",
-   "stars": 149634
+   "stars": 149636
   },
   "GoogleChromeLabs/squoosh": {
    "archived": false,
@@ -343,9 +343,9 @@
   },
   "Mintplex-Labs/anything-llm": {
    "archived": false,
-   "delta_1d": 28,
+   "delta_1d": 29,
    "delta_7d": null,
-   "forks": 7323,
+   "forks": 7324,
    "history": [
     {
      "d": "2026-09-09",
@@ -361,16 +361,16 @@
     },
     {
      "d": "2026-09-15",
-     "s": 66022
+     "s": 66023
     }
    ],
    "license": "MIT",
    "missing": false,
-   "pushed_at": "2026-09-15T01:26:24Z",
+   "pushed_at": "2026-09-15T01:59:13Z",
    "release_date": "2026-08-27T16:42:21Z",
    "release_tag": "v1.16.1",
    "release_url": "https://github.com/Mintplex-Labs/anything-llm/releases/tag/v1.16.1",
-   "stars": 66022
+   "stars": 66023
   },
   "MonitorControl/MonitorControl": {
    "archived": false,
@@ -405,7 +405,7 @@
   },
   "NickeManarin/ScreenToGif": {
    "archived": false,
-   "delta_1d": 11,
+   "delta_1d": 10,
    "delta_7d": null,
    "forks": 2362,
    "history": [
@@ -423,7 +423,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 27646
+     "s": 27645
     }
    ],
    "license": "MS-PL",
@@ -432,7 +432,7 @@
    "release_date": "2026-07-28T17:52:48Z",
    "release_tag": "2.43.2",
    "release_url": "https://github.com/NickeManarin/ScreenToGif/releases/tag/2.43.2",
-   "stars": 27646
+   "stars": 27645
   },
   "ONLYOFFICE/DesktopEditors": {
    "archived": false,
@@ -467,7 +467,7 @@
   },
   "QL-Win/QuickLook": {
    "archived": false,
-   "delta_1d": 4,
+   "delta_1d": 5,
    "delta_7d": null,
    "forks": 1300,
    "history": [
@@ -485,7 +485,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 24680
+     "s": 24681
     }
    ],
    "license": "GPL-3.0",
@@ -494,7 +494,7 @@
    "release_date": "2026-04-14T02:49:44Z",
    "release_tag": "4.5.0",
    "release_url": "https://github.com/QL-Win/QuickLook/releases/tag/4.5.0",
-   "stars": 24680
+   "stars": 24681
   },
   "ShareX/ShareX": {
    "archived": false,
@@ -529,7 +529,7 @@
   },
   "Stirling-Tools/Stirling-PDF": {
    "archived": false,
-   "delta_1d": 104,
+   "delta_1d": 106,
    "delta_7d": null,
    "forks": 8356,
    "history": [
@@ -547,7 +547,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 92079
+     "s": 92081
     }
    ],
    "license": "NOASSERTION",
@@ -556,7 +556,7 @@
    "release_date": "2026-08-06T18:48:12Z",
    "release_tag": "v2.14.3",
    "release_url": "https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v2.14.3",
-   "stars": 92079
+   "stars": 92081
   },
   "agalwood/Motrix": {
    "archived": false,
@@ -686,7 +686,7 @@
    "archived": false,
    "delta_1d": 8,
    "delta_7d": null,
-   "forks": 4376,
+   "forks": 4374,
    "history": [
     {
      "d": "2026-09-09",
@@ -746,7 +746,7 @@
   },
   "excalidraw/excalidraw": {
    "archived": false,
-   "delta_1d": 119,
+   "delta_1d": 121,
    "delta_7d": null,
    "forks": 15269,
    "history": [
@@ -764,7 +764,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 131924
+     "s": 131926
     }
    ],
    "license": "MIT",
@@ -773,7 +773,7 @@
    "release_date": "2026-04-21T08:43:20Z",
    "release_tag": "v0.18.1",
    "release_url": "https://github.com/excalidraw/excalidraw/releases/tag/v0.18.1",
-   "stars": 131924
+   "stars": 131926
   },
   "exelban/stats": {
    "archived": false,
@@ -1141,7 +1141,7 @@
    ],
    "license": "GPL-3.0",
    "missing": false,
-   "pushed_at": "2026-09-14T09:23:47Z",
+   "pushed_at": "2026-09-15T01:53:43Z",
    "release_date": "2026-08-28T02:35:39Z",
    "release_tag": "v9.14.0",
    "release_url": "https://github.com/kovidgoyal/calibre/releases/tag/v9.14.0",
@@ -1149,9 +1149,9 @@
   },
   "laurent22/joplin": {
    "archived": false,
-   "delta_1d": 10,
+   "delta_1d": 11,
    "delta_7d": null,
-   "forks": 6285,
+   "forks": 6286,
    "history": [
     {
      "d": "2026-09-09",
@@ -1167,7 +1167,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 56362
+     "s": 56363
     }
    ],
    "license": "NOASSERTION",
@@ -1176,11 +1176,11 @@
    "release_date": "2026-09-11T17:47:56Z",
    "release_tag": "v3.7.18",
    "release_url": "https://github.com/laurent22/joplin/releases/tag/v3.7.18",
-   "stars": 56362
+   "stars": 56363
   },
   "localsend/localsend": {
    "archived": false,
-   "delta_1d": 407,
+   "delta_1d": 416,
    "delta_7d": null,
    "forks": 5096,
    "history": [
@@ -1198,7 +1198,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 91347
+     "s": 91356
     }
    ],
    "license": "Apache-2.0",
@@ -1207,7 +1207,7 @@
    "release_date": "2026-08-21T14:02:01Z",
    "release_tag": "v1.18.2",
    "release_url": "https://github.com/localsend/localsend/releases/tag/v1.18.2",
-   "stars": 91347
+   "stars": 91356
   },
   "logseq/logseq": {
    "archived": false,
@@ -1234,7 +1234,7 @@
    ],
    "license": "AGPL-3.0",
    "missing": false,
-   "pushed_at": "2026-09-15T01:49:08Z",
+   "pushed_at": "2026-09-15T01:58:49Z",
    "release_date": "2026-07-13T14:10:34Z",
    "release_tag": "2.0.1",
    "release_url": "https://github.com/logseq/logseq/releases/tag/2.0.1",
@@ -1397,7 +1397,7 @@
   },
   "obsproject/obs-studio": {
    "archived": false,
-   "delta_1d": 25,
+   "delta_1d": 26,
    "delta_7d": null,
    "forks": 10166,
    "history": [
@@ -1415,7 +1415,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 76210
+     "s": 76211
     }
    ],
    "license": "GPL-2.0",
@@ -1424,13 +1424,13 @@
    "release_date": "2026-08-14T22:43:31Z",
    "release_tag": "32.2.2",
    "release_url": "https://github.com/obsproject/obs-studio/releases/tag/32.2.2",
-   "stars": 76210
+   "stars": 76211
   },
   "open-webui/open-webui": {
    "archived": false,
    "delta_1d": 126,
    "delta_7d": null,
-   "forks": 22249,
+   "forks": 22248,
    "history": [
     {
      "d": "2026-09-09",
@@ -1459,7 +1459,7 @@
   },
   "p0deje/Maccy": {
    "archived": false,
-   "delta_1d": 12,
+   "delta_1d": 13,
    "delta_7d": null,
    "forks": 1154,
    "history": [
@@ -1477,7 +1477,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 21580
+     "s": 21581
     }
    ],
    "license": "MIT",
@@ -1486,7 +1486,7 @@
    "release_date": "2026-08-10T14:35:26Z",
    "release_tag": "2.7.1",
    "release_url": "https://github.com/p0deje/Maccy/releases/tag/2.7.1",
-   "stars": 21580
+   "stars": 21581
   },
   "pdfarranger/pdfarranger": {
    "archived": false,
@@ -1552,7 +1552,7 @@
   },
   "rustdesk/rustdesk": {
    "archived": false,
-   "delta_1d": 127,
+   "delta_1d": 128,
    "delta_7d": null,
    "forks": 19019,
    "history": [
@@ -1570,7 +1570,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 123522
+     "s": 123523
     }
    ],
    "license": "AGPL-3.0",
@@ -1579,7 +1579,7 @@
    "release_date": "2026-07-06T10:02:30Z",
    "release_tag": "1.4.9",
    "release_url": "https://github.com/rustdesk/rustdesk/releases/tag/1.4.9",
-   "stars": 123522
+   "stars": 123523
   },
   "rxhanson/Rectangle": {
    "archived": false,
@@ -1647,7 +1647,7 @@
    "archived": false,
    "delta_1d": 14,
    "delta_7d": null,
-   "forks": 3003,
+   "forks": 3002,
    "history": [
     {
      "d": "2026-09-09",
@@ -1707,7 +1707,7 @@
   },
   "syncthing/syncthing": {
    "archived": false,
-   "delta_1d": 27,
+   "delta_1d": 28,
    "delta_7d": null,
    "forks": 5471,
    "history": [
@@ -1725,7 +1725,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 88577
+     "s": 88578
     }
    ],
    "license": "MPL-2.0",
@@ -1734,11 +1734,11 @@
    "release_date": "2026-09-08T07:35:00Z",
    "release_tag": "v2.1.5",
    "release_url": "https://github.com/syncthing/syncthing/releases/tag/v2.1.5",
-   "stars": 88577
+   "stars": 88578
   },
   "toeverything/AFFiNE": {
    "archived": false,
-   "delta_1d": 40,
+   "delta_1d": 41,
    "delta_7d": null,
    "forks": 5274,
    "history": [
@@ -1756,7 +1756,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 72584
+     "s": 72585
     }
    ],
    "license": "NOASSERTION",
@@ -1765,7 +1765,7 @@
    "release_date": "2026-08-18T16:51:39Z",
    "release_tag": "v0.27.4",
    "release_url": "https://github.com/toeverything/AFFiNE/releases/tag/v0.27.4",
-   "stars": 72584
+   "stars": 72585
   },
   "tw93/Pake": {
    "archived": false,
@@ -1831,7 +1831,7 @@
   },
   "vorssaint/vorssaint-utils": {
    "archived": false,
-   "delta_1d": 185,
+   "delta_1d": 186,
    "delta_7d": null,
    "forks": 679,
    "history": [
@@ -1849,7 +1849,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 19026
+     "s": 19027
     }
    ],
    "license": "GPL-3.0",
@@ -1858,7 +1858,7 @@
    "release_date": "2026-09-07T00:34:53Z",
    "release_tag": "v3.3.5",
    "release_url": "https://github.com/vorssaint/vorssaint-utils/releases/tag/v3.3.5",
-   "stars": 19026
+   "stars": 19027
   },
   "windirstat/windirstat": {
    "archived": false,
@@ -1924,7 +1924,7 @@
   },
   "xournalpp/xournalpp": {
    "archived": false,
-   "delta_1d": 4,
+   "delta_1d": 5,
    "delta_7d": null,
    "forks": 1124,
    "history": [
@@ -1942,7 +1942,7 @@
     },
     {
      "d": "2026-09-15",
-     "s": 15361
+     "s": 15362
     }
    ],
    "license": "GPL-2.0",
@@ -1951,7 +1951,7 @@
    "release_date": "2026-08-09T14:13:33Z",
    "release_tag": "v1.3.7",
    "release_url": "https://github.com/xournalpp/xournalpp/releases/tag/v1.3.7",
-   "stars": 15361
+   "stars": 15362
   },
   "zidoro/pomatez": {
    "archived": false,
@@ -2016,5 +2016,5 @@
    "stars": 15273
   }
  },
- "updated_at": "2026-09-15T01:52+00:00"
+ "updated_at": "2026-09-15T02:04+00:00"
 }
